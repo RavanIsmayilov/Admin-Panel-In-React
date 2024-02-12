@@ -9,12 +9,12 @@ export const validate = (name, value) => {
         break;
       case "price": 
         if (!value) {
-          error = "Text must be at least 3 characters";
+          error = "Text must be at least 1 characters";
         }
         break;
       case "image": 
         if (!value) {
-          error = "Text must be at least 3 characters";
+          error = "Image must be choosen";
         }
         break;
       case "info": 

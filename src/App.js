@@ -1,36 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
-import { useState } from 'react';
 import uniqid from 'uniqid';
 import { validate } from './helpers';
 
 function App() {
   const [list, setList] = useState([]);
   const [todo, setTodo] = useState({
-    image: "",
+    image: '',
     title: '',
-    info: "",
+    info: '',
     price: '',
-    completed: false
+    completed: false,
   });
 
   const [errors, setErrors] = useState({
-    image:"",
-    title:'',
-    info:"",
-    price:''
+    image: '',
+    title: '',
+    info: '',
+    price: '',
   });
 
   const handleChange = (e) => {
     e.preventDefault();
 
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
 
-    setTodo({
-      ...todo,
-      [name]: value,
-    });
-
+    if (name === 'image' && files.length > 0) {
+      setTodo({
+        ...todo,
+        image: files[0], // Store the File object directly
+      });
+    } else {
+      // Handle other input fields
+      setTodo({
+        ...todo,
+        [name]: value,
+      });
+    }
     const error = validate(name, value);
 
     setErrors({
@@ -42,25 +48,42 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (errors.title.length > 0 && errors.info.length > 0 && errors.price.length > 0 && errors.image.length > 0) {
+      
+  if (!todo.title || !todo.image || !todo.info || !todo.price) {
+    alert('Please fill in all required fields');
+    return; 
+  }
+
+    if (Object.values(errors).some((error) => error)) {
       alert('Something went wrong');
     } else {
-      setList([
-        ...list,
-        {
-          ...todo,
-          id: uniqid(),
-        },
-      ]);
+      if (todo.image) {
+        const imageUrl = URL.createObjectURL(todo.image);
+
+        setList([
+          ...list,
+          {
+            ...todo,
+            id: uniqid(),
+            image: imageUrl,
+          },
+        ]);
+      } else {
+        alert('Please select an image');
+      }
 
       setTodo({
-        image: "",
+        image: null,
         title: '',
-        info: "",
+        info: '',
         price: '',
         completed: false,
       });
     }
+  };
+
+  const handleRemove = (id) => {
+    setList((prevList) => prevList.filter((item) => item.id !== id));
   };
 
   return (
@@ -87,7 +110,6 @@ function App() {
             type='file'
             className='image'
             name='image'
-            value={todo.image}
             onChange={handleChange}
           />
           {errors.image && <p style={{ color: 'red' }}>{errors.image}</p>}
@@ -132,6 +154,7 @@ function App() {
             <img src={item.image} alt='Product' />
             <p>Product Info: {item.info}</p>
             <p>Product Price: {item.price}</p>
+            <button onClick={() => handleRemove(item.id)}>Remove</button>
           </div>
         ))}
       </div>
